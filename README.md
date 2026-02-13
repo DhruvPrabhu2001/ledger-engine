@@ -5,7 +5,7 @@ A simple ledger engine built to demonstrate financial correctness for transactio
 
 Building financial systems is hard because mistakes are expensive. I built this engine to handle the heavy lifting of financial integrity at bare minimum, and to learn how financial systems work.
 
-- **Truth in History**: Your balance isn't just a number in a database, it's the sum of every transaction that ever happened. This simple engine should make auditing a simpler task than usual..
+- **Truth in History**: Rather than making balance a simple column in any database, which could lead to simple transaction issues to major frauds, it's been made such that the balance is the sum of every transaction that ever happened. Also, this simple engine should make auditing a simpler task than usual..
 - **Rock Solid Reliability**: By implementing pessimistic locking and strict transaction ordering, it ensures that two people can't spend the same dollar at the same time, and it should sustain even in high concurrency environments.
 - **Fail Safe Processing**: With the help of idempotency keys, if some error were to occur and a client retries a request, the system ensures the transaction only happens once.
 
