@@ -4,8 +4,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.ledger.ledgerengine.domain.Account;
+import com.ledger.ledgerengine.domain.LedgerEntry;
 import com.ledger.ledgerengine.service.AccountService;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,6 +28,11 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Account>> getAllAccounts() {
+        return ResponseEntity.ok(accountService.getAllAccounts());
+    }
+
     @GetMapping("/{accountId}")
     public ResponseEntity<Account> getAccount(@PathVariable UUID accountId) {
         return ResponseEntity.ok(accountService.getAccount(accountId));
@@ -37,5 +44,10 @@ public class AccountController {
         return ResponseEntity.ok(Map.of(
                 "accountId", accountId,
                 "balance", balance));
+    }
+
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<List<LedgerEntry>> getTransactions(@PathVariable UUID accountId) {
+        return ResponseEntity.ok(accountService.getAccountTransactions(accountId));
     }
 }

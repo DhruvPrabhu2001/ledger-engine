@@ -49,4 +49,13 @@ public class LedgerRepository {
                 accountId);
         return balance != null ? balance : 0L;
     }
+
+    public List<LedgerEntry> findByAccountId(UUID accountId) {
+        if (rowMapper != null) {
+            return jdbcTemplate.query("SELECT * FROM ledger_entry WHERE account_id = ? ORDER BY created_at DESC",
+                    rowMapper,
+                    accountId);
+        }
+        return null;
+    }
 }

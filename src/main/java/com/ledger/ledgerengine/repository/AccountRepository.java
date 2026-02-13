@@ -48,4 +48,11 @@ public class AccountRepository {
         return Optional.empty();
 
     }
+
+    public java.util.List<Account> findAll() {
+        if (rowMapper != null) {
+            return jdbcTemplate.query("SELECT * FROM account", rowMapper);
+        }
+        return null;
+    }
 }
