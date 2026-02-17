@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Demo - Ledger Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="8" fill="url(#gradient1)"/>
+                        <path d="M16 8L24 12V20L16 24L8 20V12L16 8Z" fill="white" opacity="0.9"/>
+                        <defs>
+                            <linearGradient id="gradient1" x1="0" y1="0" x2="32" y2="32">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h1>Banking Demo</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="refreshBtn" class="btn-icon" title="Refresh" aria-label="Refresh accounts">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                        </svg>
+                    </button>
+                    <div class="status-indicator">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">Connecting...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-main">
+        <div class="container">
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-view="dashboard">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/>
+                        <rect x="14" y="3" width="7" height="7"/>
+                        <rect x="14" y="14" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    Dashboard
+                </button>
+                <button class="tab-btn" data-view="deposit">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <polyline points="19 12 12 19 5 12"/>
+                    </svg>
+                    Deposit
+                </button>
+                <button class="tab-btn" data-view="withdraw">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="19" x2="12" y2="5"/>
+                        <polyline points="5 12 12 5 19 12"/>
+                    </svg>
+                    Withdraw
+                </button>
+                <button class="tab-btn" data-view="transfer">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="7" y1="17" x2="17" y2="7"/>
+                        <polyline points="17 17 7 17 7 7"/>
+                        <polyline points="7 7 17 7 17 17"/>
+                    </svg>
+                    Transfer
+                </button>
+            </nav>
+
+            <!-- Notification Area -->
+            <div id="notificationArea" class="notification-area"></div>
+
+            <!-- Dashboard View -->
+            <section id="dashboardView" class="view active">
+                <div class="view-header">
+                    <h2>Accounts Overview</h2>
+                    <button id="createAccountBtn" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Create Account
+                    </button>
+                </div>
+                <div id="accountsGrid" class="accounts-grid">
+                    <div class="loading-skeleton"></div>
+                    <div class="loading-skeleton"></div>
+                    <div class="loading-skeleton"></div>
+                </div>
+            </section>
+
+            <!-- Deposit View -->
+            <section id="depositView" class="view">
+                <div class="view-header">
+                    <h2>Deposit Funds</h2>
+                </div>
+                <div class="form-container">
+                    <form id="depositForm" class="transaction-form">
+                        <div class="form-group">
+                            <label for="depositAccount">Select Account</label>
+                            <select id="depositAccount" required>
+                                <option value="">Choose an account...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="depositAmount">Amount (USD)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="depositAmount" step="0.01" min="0.01" placeholder="0.00" required>
+                            </div>
+                            <small class="form-hint">Amount in dollars (will be converted to cents)</small>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Execute Deposit
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Withdraw View -->
+            <section id="withdrawView" class="view">
+                <div class="view-header">
+                    <h2>Withdraw Funds</h2>
+                </div>
+                <div class="form-container">
+                    <form id="withdrawForm" class="transaction-form">
+                        <div class="form-group">
+                            <label for="withdrawAccount">Select Account</label>
+                            <select id="withdrawAccount" required>
+                                <option value="">Choose an account...</option>
+                            </select>
+                        </div>
+                        <div id="withdrawBalanceDisplay" class="balance-display"></div>
+                        <div class="form-group">
+                            <label for="withdrawAmount">Amount (USD)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="withdrawAmount" step="0.01" min="0.01" placeholder="0.00" required>
+                            </div>
+                            <small class="form-hint">Amount in dollars (will be converted to cents)</small>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Execute Withdrawal
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Transfer View -->
+            <section id="transferView" class="view">
+                <div class="view-header">
+                    <h2>Transfer Funds</h2>
+                </div>
+                <div class="form-container">
+                    <form id="transferForm" class="transaction-form">
+                        <div class="form-group">
+                            <label for="transferFrom">From Account</label>
+                            <select id="transferFrom" required>
+                                <option value="">Choose source account...</option>
+                            </select>
+                        </div>
+                        <div id="transferBalanceDisplay" class="balance-display"></div>
+                        <div class="transfer-arrow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <polyline points="19 12 12 19 5 12"/>
+                            </svg>
+                        </div>
+                        <div class="form-group">
+                            <label for="transferTo">To Account</label>
+                            <select id="transferTo" required>
+                                <option value="">Choose destination account...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="transferAmount">Amount (USD)</label>
+                            <div class="input-group">
+                                <span class="input-prefix">$</span>
+                                <input type="number" id="transferAmount" step="0.01" min="0.01" placeholder="0.00" required>
+                            </div>
+                            <small class="form-hint">Amount in dollars (will be converted to cents)</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Execute Transfer
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Transaction History Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Transaction History</h3>
+                <button class="modal-close" id="closeModalBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="modalAccountInfo" class="modal-account-info"></div>
+                <div id="transactionList" class="transaction-list">
+                    <div class="loading-skeleton"></div>
+                    <div class="loading-skeleton"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
