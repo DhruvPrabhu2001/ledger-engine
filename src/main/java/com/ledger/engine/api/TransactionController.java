@@ -19,6 +19,7 @@ public class TransactionController {
 
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResponse> deposit(@RequestBody DepositRequest request) {
+        validateDepositRequest(request);
         Transaction tx = ledgerService.deposit(
                 request.getAccountId(),
                 request.getAmount(),
@@ -28,6 +29,7 @@ public class TransactionController {
 
     @PostMapping("/withdraw")
     public ResponseEntity<TransactionResponse> withdraw(@RequestBody WithdrawRequest request) {
+        validateWithdrawRequest(request);
         Transaction tx = ledgerService.withdraw(
                 request.getAccountId(),
                 request.getAmount(),
@@ -37,12 +39,43 @@ public class TransactionController {
 
     @PostMapping("/transfer")
     public ResponseEntity<TransactionResponse> transfer(@RequestBody TransferRequest request) {
+        validateTransferRequest(request);
         Transaction tx = ledgerService.transfer(
                 request.getFromAccountId(),
                 request.getToAccountId(),
                 request.getAmount(),
                 request.getIdempotencyKey());
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(tx));
+    }
+
+    private void validateDepositRequest(DepositRequest request) {
+        if (request.getAccountId() == null) {
+            throw new IllegalArgumentException("accountId is required");
+        }
+        if (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank()) {
+            throw new IllegalArgumentException("idempotencyKey is required");
+        }
+    }
+
+    private void validateWithdrawRequest(WithdrawRequest request) {
+        if (request.getAccountId() == null) {
+            throw new IllegalArgumentException("accountId is required");
+        }
+        if (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank()) {
+            throw new IllegalArgumentException("idempotencyKey is required");
+        }
+    }
+
+    private void validateTransferRequest(TransferRequest request) {
+        if (request.getFromAccountId() == null) {
+            throw new IllegalArgumentException("fromAccountId is required");
+        }
+        if (request.getToAccountId() == null) {
+            throw new IllegalArgumentException("toAccountId is required");
+        }
+        if (request.getIdempotencyKey() == null || request.getIdempotencyKey().isBlank()) {
+            throw new IllegalArgumentException("idempotencyKey is required");
+        }
     }
 
     private TransactionResponse toResponse(Transaction tx) {

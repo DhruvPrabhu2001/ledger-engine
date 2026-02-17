@@ -24,6 +24,15 @@ public class LedgerEntryRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public void save(LedgerEntry entry) {
+        jdbcTemplate.update(
+                "INSERT INTO ledger_entry (ledger_entry_id, transaction_id, account_id, amount) VALUES (?, ?, ?, ?)",
+                entry.getLedgerEntryId(),
+                entry.getTransactionId(),
+                entry.getAccountId(),
+                entry.getAmount());
+    }
+
     public void saveAll(List<LedgerEntry> entries) {
         for (LedgerEntry entry : entries) {
             jdbcTemplate.update(

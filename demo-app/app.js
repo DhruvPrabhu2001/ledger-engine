@@ -220,7 +220,7 @@ async function handleDeposit(event) {
     event.preventDefault();
 
     const accountId = document.getElementById('depositAccount').value;
-    const amountUSD = parseFloat(document.getElementById('depositAmount').value);
+    const amountUSD = parseFloat(document.getElementById('depositAmount').value) || 0;
     const amount = Math.round(amountUSD * 100);
 
     if (!accountId) {
@@ -255,7 +255,7 @@ async function handleWithdraw(event) {
     event.preventDefault();
 
     const accountId = document.getElementById('withdrawAccount').value;
-    const amountUSD = parseFloat(document.getElementById('withdrawAmount').value);
+    const amountUSD = parseFloat(document.getElementById('withdrawAmount').value) || 0;
     const amount = Math.round(amountUSD * 100);
 
     if (!accountId) {
@@ -291,7 +291,7 @@ async function handleTransfer(event) {
 
     const fromAccountId = document.getElementById('transferFrom').value;
     const toAccountId = document.getElementById('transferTo').value;
-    const amountUSD = parseFloat(document.getElementById('transferAmount').value);
+    const amountUSD = parseFloat(document.getElementById('transferAmount').value) || 0;
     const amount = Math.round(amountUSD * 100);
 
     if (!fromAccountId || !toAccountId) {

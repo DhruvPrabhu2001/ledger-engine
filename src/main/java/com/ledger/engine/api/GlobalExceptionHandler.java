@@ -1,11 +1,13 @@
 package com.ledger.engine.api;
 
 import com.ledger.engine.api.dto.ErrorResponse;
+import com.ledger.engine.exception.AccountClosedException;
 import com.ledger.engine.exception.AccountNotFoundException;
 import com.ledger.engine.exception.DuplicateRequestException;
 import com.ledger.engine.exception.InsufficientFundsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -36,6 +38,27 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse("DUPLICATE_REQUEST",
                         ex.getMessage() + " (existing transactionId: " + ex.getExistingTransactionId() + ")"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = ex.getMostSpecificCause().getMessage();
+        if (message != null && message.contains("idempotency_key")) {
+            log.info("Concurrent duplicate request detected (DB constraint): {}", message);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("DUPLICATE_REQUEST",
+                            "Request already processed (concurrent duplicate detected)"));
+        }
+        log.error("Data integrity violation: {}", message);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse("DATA_CONFLICT", "A data conflict occurred"));
+    }
+
+    @ExceptionHandler(AccountClosedException.class)
+    public ResponseEntity<ErrorResponse> handleAccountClosed(AccountClosedException ex) {
+        log.warn("Account closed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ErrorResponse("ACCOUNT_CLOSED", ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

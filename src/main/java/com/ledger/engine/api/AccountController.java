@@ -2,6 +2,7 @@ package com.ledger.engine.api;
 
 import com.ledger.engine.api.dto.AccountResponse;
 import com.ledger.engine.api.dto.BalanceResponse;
+import com.ledger.engine.api.dto.LedgerEntryResponse;
 import com.ledger.engine.domain.Account;
 import com.ledger.engine.domain.LedgerEntry;
 import com.ledger.engine.service.AccountService;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -39,7 +39,7 @@ public class AccountController {
     public ResponseEntity<List<AccountResponse>> listAccounts() {
         List<AccountResponse> accounts = accountService.listAccounts().stream()
                 .map(this::toResponse)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(accounts);
     }
 
@@ -50,8 +50,10 @@ public class AccountController {
     }
 
     @GetMapping("/{accountId}/transactions")
-    public ResponseEntity<List<LedgerEntry>> getTransactions(@PathVariable UUID accountId) {
-        List<LedgerEntry> entries = accountService.getAccountTransactions(accountId);
+    public ResponseEntity<List<LedgerEntryResponse>> getTransactions(@PathVariable UUID accountId) {
+        List<LedgerEntryResponse> entries = accountService.getAccountTransactions(accountId).stream()
+                .map(this::toEntryResponse)
+                .toList();
         return ResponseEntity.ok(entries);
     }
 
@@ -60,5 +62,13 @@ public class AccountController {
                 account.getAccountId(),
                 account.getStatus().name(),
                 account.getCreatedAt());
+    }
+
+    private LedgerEntryResponse toEntryResponse(LedgerEntry entry) {
+        return new LedgerEntryResponse(
+                entry.getLedgerEntryId(),
+                entry.getTransactionId(),
+                entry.getAmount(),
+                entry.getCreatedAt());
     }
 }

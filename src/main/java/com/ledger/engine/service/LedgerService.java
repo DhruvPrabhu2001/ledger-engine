@@ -1,8 +1,11 @@
 package com.ledger.engine.service;
 
+import com.ledger.engine.domain.Account;
+import com.ledger.engine.domain.AccountStatus;
 import com.ledger.engine.domain.LedgerEntry;
 import com.ledger.engine.domain.Transaction;
 import com.ledger.engine.domain.TransactionStatus;
+import com.ledger.engine.exception.AccountClosedException;
 import com.ledger.engine.exception.AccountNotFoundException;
 import com.ledger.engine.exception.DuplicateRequestException;
 import com.ledger.engine.exception.InsufficientFundsException;
@@ -50,8 +53,9 @@ public class LedgerService {
                     existing.get().getTransactionId());
         }
 
-        accountRepository.lockForUpdate(accountId)
+        Account account = accountRepository.lockForUpdate(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found: " + accountId));
+        requireActive(account);
 
         UUID txId = UUID.randomUUID();
         Transaction transaction = new Transaction(txId, idempotencyKey,
@@ -59,7 +63,7 @@ public class LedgerService {
         transactionRepository.save(transaction);
 
         LedgerEntry credit = new LedgerEntry(UUID.randomUUID(), txId, accountId, amount, LocalDateTime.now());
-        ledgerEntryRepository.saveAll(Collections.singletonList(credit));
+        ledgerEntryRepository.save(credit);
 
         log.info("Deposit completed: txId={}, accountId={}, amount={}", txId, accountId, amount);
         return transaction;
@@ -77,8 +81,9 @@ public class LedgerService {
                     existing.get().getTransactionId());
         }
 
-        accountRepository.lockForUpdate(accountId)
+        Account account = accountRepository.lockForUpdate(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found: " + accountId));
+        requireActive(account);
 
         long balance = ledgerEntryRepository.deriveBalance(accountId);
         if (balance < amount) {
@@ -93,7 +98,7 @@ public class LedgerService {
         transactionRepository.save(transaction);
 
         LedgerEntry debit = new LedgerEntry(UUID.randomUUID(), txId, accountId, -amount, LocalDateTime.now());
-        ledgerEntryRepository.saveAll(Collections.singletonList(debit));
+        ledgerEntryRepository.save(debit);
 
         log.info("Withdrawal completed: txId={}, accountId={}, amount={}", txId, accountId, amount);
         return transaction;
@@ -119,8 +124,9 @@ public class LedgerService {
         Collections.sort(sortedIds);
 
         for (UUID id : sortedIds) {
-            accountRepository.lockForUpdate(id)
+            Account lockedAccount = accountRepository.lockForUpdate(id)
                     .orElseThrow(() -> new AccountNotFoundException("Account not found: " + id));
+            requireActive(lockedAccount);
         }
 
         long sourceBalance = ledgerEntryRepository.deriveBalance(fromAccountId);
@@ -153,6 +159,13 @@ public class LedgerService {
     private void validateAmount(long amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive, got: " + amount);
+        }
+    }
+
+    private void requireActive(Account account) {
+        if (account.getStatus() != AccountStatus.ACTIVE) {
+            throw new AccountClosedException(
+                    "Account " + account.getAccountId() + " is " + account.getStatus() + ", not ACTIVE");
         }
     }
 }
