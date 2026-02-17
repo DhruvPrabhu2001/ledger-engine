@@ -13,4 +13,13 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/demo-app/**")
                 .addResourceLocations("file:" + projectDir + "/demo-app/");
     }
+
+    @Override
+    public void addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
 }
